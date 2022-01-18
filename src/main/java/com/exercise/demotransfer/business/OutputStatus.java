@@ -5,9 +5,8 @@ import lombok.Data;
 import java.util.ArrayList;
 
 @Data
-public class AccountOutput extends OutputStatus{
+public class OutputStatus {
 
-    private Double account_balance;
-
-
+    private String status;
+    private ArrayList<String> errors;
 }

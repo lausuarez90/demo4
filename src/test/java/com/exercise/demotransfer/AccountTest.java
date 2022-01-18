@@ -13,9 +13,12 @@ import javax.annotation.Resource;
 
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 import org.junit.Test;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(
@@ -31,8 +34,9 @@ public class AccountTest {
     @Test
     public void getAccountTest(){
         String accountId = "123456789";
-        AccountEntity entity = accountRepository.findAccountByAccountId(accountId);
-        assertEquals("50000", entity.getAccountBalance());
+        Optional<AccountEntity> entity = accountRepository.findByAccountId(accountId);
+        assertEquals("50000", entity.get().getAccountBalance());
+
 
     }
 }
