@@ -19,4 +19,9 @@ public class AccountEntity {
 
     private String accountBalance;
 
+
+    /*public AccountEntity(String accountId, String accountBalance){
+        this.accountId = accountId;
+        this.accountBalance = accountBalance;
+    }*/
 }

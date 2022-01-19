@@ -56,10 +56,12 @@ public class DemoJpaConfig {
     final Properties additionalProperties() {
         final Properties hibernateProperties = new Properties();
 
-        //hibernateProperties.setProperty("hibernate.hbm2ddl.auto", env.getProperty("hibernate.hbm2ddl.auto"));
+        hibernateProperties.setProperty("hibernate.hbm2ddl.auto", env.getProperty("hibernate.hbm2ddl.auto"));
         hibernateProperties.setProperty("hibernate.dialect", env.getProperty("hibernate.dialect"));
         hibernateProperties.setProperty("spring.jpa.properties.hibernate.format_sql", env.getProperty("spring.jpa.properties.hibernate.format_sql"));
         hibernateProperties.setProperty("spring.jpa.database-platform", env.getProperty("spring.jpa.database-platform"));
+        hibernateProperties.setProperty("spring.jpa.defer-datasource-initialization", env.getProperty("spring.jpa.defer-datasource-initialization"));
+        hibernateProperties.setProperty("spring.jpa.show-sql", env.getProperty("spring.jpa.show-sql"));
         /*hibernateProperties.setProperty("hibernate.cache.use_second_level_cache", env.getProperty("hibernate.cache.use_second_level_cache"));
         hibernateProperties.setProperty("hibernate.cache.use_query_cache", env.getProperty("hibernate.cache.use_query_cache"));*/
 
