@@ -1,5 +1,6 @@
 package com.exercise.demotransfer.data.entities;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -16,11 +17,12 @@ public class TransferEntity {
     private Long id;
     private Double amount;
     private String currency;
-    private String origin_account;
-    private String destination_account;
+    private String originAccount;
+    private String destinationAccount;
     private String description;
-    private Double tax_collected;
+    private Double taxCollected;
     private Double cad;
+    private Integer numberTransfer;
 
 
 
