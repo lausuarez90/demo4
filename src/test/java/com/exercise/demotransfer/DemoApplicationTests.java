@@ -6,7 +6,10 @@ import com.exercise.demotransfer.data.repository.AccountRepository;
 import com.exercise.demotransfer.service.AccountServiceImp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -15,19 +18,18 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 
-import static org.junit.Assert.assertEquals;
+import java.util.Optional;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(
-		classes = { DemoJpaConfig.class },
-		loader = AnnotationConfigContextLoader.class)
-@Transactional
-@DirtiesContext
+import static org.junit.Assert.assertEquals;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
 class DemoApplicationTests {
 
 	private AccountServiceImp accountServiceImp;
 
-	@Resource
+	@Mock
 	private AccountRepository accountRepository;
 
 	@BeforeEach
@@ -41,13 +43,23 @@ class DemoApplicationTests {
 	@Test
 	public void checkGetAccount(){
 		String accountId = "123456789";
-		//given(accountRepository.findAccountByAccountId(accountId)).willReturn(accountRepository.findAccountByAccountId(accountId));
+		/*given(accountRepository.findByAccountId(accountId)).willReturn(Optional.empty());*/
 
-		/*AccountEntity entity = accountRepository.findAccountByAccountId(accountId);
-		assertEquals("8000", entity.getAccountBalance());*/
+		AccountEntity account = new AccountEntity();
+		account.setId(1L);
+		account.setAccountId("78523456");
+		account.setAccountBalance("58236");
+		/*given(accountRepository.save(account)).willReturn(account);*/
+
+		Optional<AccountEntity> entity = Optional.of(account);
+		when(accountRepository.findByAccountId(accountId)).thenReturn(entity);
 
 		AccountOutput output = accountServiceImp.findBalanceAccount(accountId);
 		assertEquals("OK", output.getStatus());
+
+		/*assertEquals("8000", entity.get().getAccountBalance());
+
+
 
 		/*then(output.getStatus().equals("OK"));
 

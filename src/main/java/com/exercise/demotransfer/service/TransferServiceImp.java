@@ -37,90 +37,115 @@ public class TransferServiceImp implements TransferService{
         TransferOutput transferOutput = new TransferOutput();
         ArrayList<String> errors = new ArrayList<>();
 
-        if (transferInput != null){
-            Optional<AccountEntity> accountOrigin = accountRepository.findByAccountId(transferInput.getOrigin_account());
-            if (accountOrigin.isPresent()){
-                if (Double.parseDouble(accountOrigin.get().getAccountBalance()) < transferInput.getAmount()){
+        try {
+
+            if (transferInput != null) {
+
+                //Validate origin account different to destination account
+                if(transferInput.getOrigin_account().equals(transferInput.getDestination_account())){
                     transferOutput.setStatus("ERROR");
-                    errors.add("insufficient-funds");
+                    errors.add("origin account is equal to destination account");
                     transferOutput.setErrors(errors);
                     transferOutput.setTax_collected(0.0);
-                }else {
-                    if (transferInput.getCurrency().equals("USD")) {
+                    return transferOutput;
+                }
 
-                        Long maxTransfer = transferRepository.lastTransfer(transferInput.getOrigin_account());
-                        int counterTranfers = 0;
-                        if (maxTransfer != null) {
-                            counterTranfers = maxTransfer.intValue();
-                        }
-
-                        if (maxTransfer != null && maxTransfer >= 3) {
-                            transferOutput.setStatus("ERROR");
-                            errors.add("limit_exceeded");
-                            transferOutput.setErrors(errors);
-                            transferOutput.setTax_collected(0.0);
-
-                        } else {
-
-                            //Calculate the tax
-                            Double tax = calculateTax(transferInput.getAmount());
-
-                            try {
-                                //Convert USD to CAD
-                                double cad = callApiExchangeRate(transferInput.getAmount());
-                                counterTranfers += 1;
-
-                                //Save Transfer
-                                TransferEntity transfer = new TransferEntity();
-                                transfer.setAmount(transferInput.getAmount());
-                                transfer.setCurrency(transferInput.getCurrency());
-                                transfer.setOriginAccount(transferInput.getOrigin_account());
-                                transfer.setDestinationAccount(transferInput.getDestination_account());
-                                transfer.setDescription(transferInput.getDescription());
-                                transfer.setTaxCollected(tax);
-                                transfer.setCad(cad);
-                                transfer.setNumberTransfer(counterTranfers);
-                                transferRepository.save(transfer);
-
-                                //At the end of the transfer save the new balance
-                                //Save accountOrigin with the new balance
-                                accountOrigin.get().setAccountBalance(String.valueOf(Double.parseDouble(accountOrigin.get().getAccountBalance()) - transferInput.getAmount() - tax));
-                                accountRepository.save(accountOrigin.get());
-                                //Save accountDestination with the increase in the balance
-                                Optional<AccountEntity> accountDestination = accountRepository.findByAccountId(transferInput.getDestination_account());
-                                accountDestination.get().setAccountBalance(String.valueOf(Double.parseDouble(accountDestination.get().getAccountBalance()) + transferInput.getAmount()));
-                                accountRepository.save(accountDestination.get());
-
-                                transferOutput.setStatus("OK");
-                                transferOutput.setErrors(errors);
-                                transferOutput.setCad(cad);
-                                transferOutput.setTax_collected(tax);
-
-                            } catch (UnirestException e) {
-                                e.printStackTrace();
-                                transferOutput.setStatus("ERROR");
-                                errors.add("error calling the exchangerate api");
-                                transferOutput.setErrors(errors);
-                                transferOutput.setTax_collected(0.0);
-                            }
-                        }
-
-                    }else{
+                //Get the origin account to validate its balance
+                Optional<AccountEntity> accountOrigin = accountRepository.findByAccountId(transferInput.getOrigin_account());
+                if (accountOrigin.isPresent()) {
+                    if (Double.parseDouble(accountOrigin.get().getAccountBalance()) < transferInput.getAmount()) {
                         transferOutput.setStatus("ERROR");
-                        errors.add("currency unsupported");
+                        errors.add("insufficient-funds");
                         transferOutput.setErrors(errors);
                         transferOutput.setTax_collected(0.0);
+                    } else {
+                        if (transferInput.getCurrency().equals("USD")) {
+                            //Get the max transfer to validate 3 max transfer per day
+                            Long maxTransfer = transferRepository.lastTransfer(transferInput.getOrigin_account());
+                            int counterTranfers = 0;
+                            if (maxTransfer != null) {
+                                counterTranfers = maxTransfer.intValue();
+                            }
+
+                            if (maxTransfer != null && maxTransfer >= 3) {
+                                transferOutput.setStatus("ERROR");
+                                errors.add("limit_exceeded");
+                                transferOutput.setErrors(errors);
+                                transferOutput.setTax_collected(0.0);
+
+                            } else {
+
+                                //Calculate the tax
+                                Double tax = calculateTax(transferInput.getAmount());
+
+                                try {
+                                    //Convert USD to CAD
+                                    double cad = callApiExchangeRate(transferInput.getAmount());
+                                    counterTranfers += 1;
+
+                                    //Save Transfer
+                                    TransferEntity transfer = new TransferEntity();
+                                    transfer.setAmount(transferInput.getAmount());
+                                    transfer.setCurrency(transferInput.getCurrency());
+                                    transfer.setOriginAccount(transferInput.getOrigin_account());
+                                    transfer.setDestinationAccount(transferInput.getDestination_account());
+                                    transfer.setDescription(transferInput.getDescription());
+                                    transfer.setTaxCollected(tax);
+                                    transfer.setCad(cad);
+                                    transfer.setNumberTransfer(counterTranfers);
+                                    transferRepository.save(transfer);
+
+                                    //At the end of the transfer save the new balance
+                                    //Save accountOrigin with the new balance
+                                    accountOrigin.get().setAccountBalance(String.valueOf(Double.parseDouble(accountOrigin.get().getAccountBalance()) - transferInput.getAmount() - tax));
+                                    accountRepository.save(accountOrigin.get());
+                                    //Save accountDestination with the increase in the balance
+                                    Optional<AccountEntity> accountDestination = accountRepository.findByAccountId(transferInput.getDestination_account());
+                                    accountDestination.get().setAccountBalance(String.valueOf(Double.parseDouble(accountDestination.get().getAccountBalance()) + transferInput.getAmount()));
+                                    accountRepository.save(accountDestination.get());
+
+                                    transferOutput.setStatus("OK");
+                                    transferOutput.setErrors(errors);
+                                    transferOutput.setCad(cad);
+                                    transferOutput.setTax_collected(tax);
+
+                                } catch (UnirestException e) {
+                                    e.printStackTrace();
+                                    transferOutput.setStatus("ERROR");
+                                    errors.add("Error calling the exchangerate api");
+                                    transferOutput.setErrors(errors);
+                                    transferOutput.setTax_collected(0.0);
+                                }
+                            }
+
+                        } else {
+                            transferOutput.setStatus("ERROR");
+                            errors.add("currency unsupported");
+                            transferOutput.setErrors(errors);
+                            transferOutput.setTax_collected(0.0);
+                        }
                     }
+                } else {
+                    transferOutput.setStatus("ERROR");
+                    errors.add("the origin account does not exist ");
+                    transferOutput.setErrors(errors);
+                    transferOutput.setTax_collected(0.0);
+
                 }
             }
-        }
 
+        } catch (Exception e) {
+            errors.add("An error occurred " + e.getMessage());
+            transferOutput.setErrors(errors);
+            transferOutput.setStatus("ERROR");
+
+        }
         return transferOutput;
     }
 
     public Double calculateTax(Double amount) {
 
-        Double tax;
+        double tax;
 
         if (amount > 100) {
             tax = (amount * 0.5) / 100;
@@ -133,7 +158,7 @@ public class TransferServiceImp implements TransferService{
 
     public Double callApiExchangeRate(Double amount) throws UnirestException {
 
-        Double convertCad = 0.0;
+        double convertCad = 0.0;
 
         // Host url
         String host = "http://api.exchangeratesapi.io/v1/";
