@@ -5,5 +5,5 @@ import com.exercise.demotransfer.business.TransferOutput;
 
 public interface TransferService {
 
-    TransferOutput saveTransfer(TransferInput transferInput);
+    TransferOutput setTransfer(TransferInput transferInput);
 }

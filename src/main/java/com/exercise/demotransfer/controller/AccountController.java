@@ -10,16 +10,20 @@ import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RequiredArgsConstructor
-@RequestMapping("/account")
+@RequestMapping("/accounts")
 @RestController
 public class AccountController {
 
-    @Autowired
+
     private AccountService accountService;
 
+    @Autowired
+    public AccountController (AccountService accountService){
+        this.accountService = accountService;
+    }
 
     @PostMapping
     public AccountOutput getBalanceAccount(@RequestBody AccountInput accountInput) {
-        return accountService.findBalanceAccount(accountInput.getAccount_id());
+        return accountService.getBalanceAccount(accountInput.getAccount_id());
     }
 }

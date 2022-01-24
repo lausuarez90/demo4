@@ -7,21 +7,12 @@ import com.exercise.demotransfer.service.AccountServiceImp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.support.AnnotationConfigContextLoader;
-import org.springframework.transaction.annotation.Transactional;
-
-import javax.annotation.Resource;
 
 import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -54,7 +45,7 @@ class DemoApplicationTests {
 		Optional<AccountEntity> entity = Optional.of(account);
 		when(accountRepository.findByAccountId(accountId)).thenReturn(entity);
 
-		AccountOutput output = accountServiceImp.findBalanceAccount(accountId);
+		AccountOutput output = accountServiceImp.getBalanceAccount(accountId);
 		assertEquals("OK", output.getStatus());
 
 		/*assertEquals("8000", entity.get().getAccountBalance());

@@ -1,6 +1,7 @@
 package com.exercise.demotransfer.service;
 
 import com.exercise.demotransfer.business.AccountOutput;
+import com.exercise.demotransfer.business.enums.MessagesEnum;
 import com.exercise.demotransfer.data.entities.AccountEntity;
 import com.exercise.demotransfer.data.repository.AccountRepository;
 import lombok.RequiredArgsConstructor;
@@ -16,11 +17,15 @@ import java.util.Optional;
 @Service
 public class AccountServiceImp implements AccountService{
 
+    private AccountRepository accountRepository;
+
     @Autowired
-    private final AccountRepository accountRepository;
+    public AccountServiceImp(AccountRepository accountRepository){
+        this.accountRepository = accountRepository;
+    }
 
     @Override
-    public AccountOutput findBalanceAccount(String accountId) {
+    public AccountOutput getBalanceAccount(String accountId) {
 
         AccountOutput output = new AccountOutput();
         ArrayList<String> errors = new ArrayList<>();
@@ -32,25 +37,25 @@ public class AccountServiceImp implements AccountService{
             if (account.isPresent()) {
 
                 if (Double.parseDouble(account.get().getAccountBalance()) < 0) {
-                    errors.add("The account does not have balance");
+                    errors.add(MessagesEnum.NOT_BALANCE.getDescription());
                     output.setErrors(errors);
-                    output.setStatus("ERROR");
+                    output.setStatus(MessagesEnum.ERROR.getDescription());
                 } else {
-                    output.setStatus("OK");
+                    output.setStatus(MessagesEnum.OK.getDescription());
                     output.setErrors(errors);
                     output.setAccount_balance(Double.parseDouble(account.get().getAccountBalance()));
                 }
 
             } else {
-                errors.add("The account does not exist");
+                errors.add(MessagesEnum.ACCOUNT_NOT_EXIST.getDescription());
                 output.setErrors(errors);
-                output.setStatus("ERROR");
+                output.setStatus(MessagesEnum.ERROR.getDescription());
             }
 
         } catch (Exception e) {
-            errors.add("An error occurred " + e.getMessage());
+            errors.add(MessagesEnum.UNEXPECTETD_ERROR.getDescription() + " " + e.getMessage());
             output.setErrors(errors);
-            output.setStatus("ERROR");
+            output.setStatus(MessagesEnum.ERROR.getDescription());
         }
 
         return output;
