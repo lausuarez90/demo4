@@ -20,7 +20,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Optional;
 
 @Slf4j
@@ -69,15 +72,19 @@ public class TransferServiceImp implements TransferService{
                 //Get the origin account to validate its balance
                 Optional<AccountEntity> accountOrigin = accountRepository.findByAccountId(transferInput.getOrigin_account());
                 if (accountOrigin.isPresent()) {
-                    if (Double.parseDouble(accountOrigin.get().getAccountBalance()) < transferInput.getAmount()) {
+                    if (Double.parseDouble(accountOrigin.get().getAccountBalance()) < transferInput.getAmount().doubleValue()) {
                         transferOutput.setStatus(MessagesEnum.ERROR.getDescription());
                         errors.add(MessagesEnum.INSUFFICIENT_FUNDS.getDescription());
                         transferOutput.setErrors(errors);
                         transferOutput.setTax_collected(0.0);
                     } else {
                         if (transferInput.getCurrency().equals("USD")) {
+
+                            Date date = new Date();
+                            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+                            String strDate = formatter.format(date);
                             //Get the max transfer to validate 3 max transfer per day
-                            Long maxTransfer = transferRepository.lastTransfer(transferInput.getOrigin_account());
+                            Long maxTransfer = transferRepository.lastTransfer(transferInput.getOrigin_account(), new SimpleDateFormat("yyyy-MM-dd").parse(strDate));
                             int counterTranfers = 0;
                             if (maxTransfer != null) {
                                 counterTranfers = maxTransfer.intValue();
@@ -92,11 +99,11 @@ public class TransferServiceImp implements TransferService{
                             } else {
 
                                 //Calculate the tax
-                                Double tax = ServiceUtils.calculateTax(transferInput.getAmount());
+                                Double tax = ServiceUtils.calculateTax(transferInput.getAmount().doubleValue());
 
                                 try {
                                     //Convert USD to CAD
-                                    double cad = callApiExchangeRate(transferInput.getAmount());
+                                    BigDecimal cad = callApiExchangeRate(transferInput.getAmount().doubleValue());
                                     counterTranfers += 1;
 
                                     //Save Transfer
@@ -109,15 +116,16 @@ public class TransferServiceImp implements TransferService{
                                     transfer.setTaxCollected(tax);
                                     transfer.setCad(cad);
                                     transfer.setNumberTransfer(counterTranfers);
+                                    transfer.setDateTransfer(new Date());
                                     transferRepository.save(transfer);
 
                                     //At the end of the transfer save the new balance
                                     //Save accountOrigin with the new balance
-                                    accountOrigin.get().setAccountBalance(String.valueOf(Double.parseDouble(accountOrigin.get().getAccountBalance()) - transferInput.getAmount() - tax));
+                                    accountOrigin.get().setAccountBalance(String.valueOf(Double.parseDouble(accountOrigin.get().getAccountBalance()) - transferInput.getAmount().doubleValue() - tax));
                                     accountRepository.save(accountOrigin.get());
                                     //Save accountDestination with the increase in the balance
                                     Optional<AccountEntity> accountDestination = accountRepository.findByAccountId(transferInput.getDestination_account());
-                                    accountDestination.get().setAccountBalance(String.valueOf(Double.parseDouble(accountDestination.get().getAccountBalance()) + transferInput.getAmount()));
+                                    accountDestination.get().setAccountBalance(String.valueOf(Double.parseDouble(accountDestination.get().getAccountBalance()) + transferInput.getAmount().doubleValue()));
                                     accountRepository.save(accountDestination.get());
 
                                     transferOutput.setStatus(MessagesEnum.OK.getDescription());
@@ -159,9 +167,9 @@ public class TransferServiceImp implements TransferService{
         return transferOutput;
     }
 
-    public Double callApiExchangeRate(Double amount) throws UnirestException {
+    public BigDecimal callApiExchangeRate(Double amount) throws UnirestException {
 
-        double convertCad = 0.0;
+        BigDecimal convertCad = new BigDecimal("0.0");
 
         // Host url
         //String host = env.getProperty("exchangeratesapi.host"); //"http://api.exchangeratesapi.io/v1/";
@@ -186,8 +194,8 @@ public class TransferServiceImp implements TransferService{
             String cad = rateName.get("CAD").getAsString();
 
             if (base.equals("EUR")) {
-                double euros = amount / Double.parseDouble(usd);
-                convertCad = euros * Double.parseDouble(cad);
+                BigDecimal euros = new BigDecimal(Double.toString(amount / Double.parseDouble(usd)));
+                convertCad = new BigDecimal(Double.toString(euros.doubleValue() * Double.parseDouble(cad)));
             }
 
         }
