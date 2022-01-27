@@ -19,6 +19,4 @@ public class AccountEntity {
 
     private String accountBalance;
 
-    private Long currencyId;
-
 }

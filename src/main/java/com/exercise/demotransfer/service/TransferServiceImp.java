@@ -44,6 +44,9 @@ public class TransferServiceImp implements TransferService{
     @Value( "${exchangeratesapi.symbols}" )
     private String symbols;
 
+    @Value("${currency.supported}")
+    private String currencySupported;
+
     @Autowired
     public TransferServiceImp(AccountRepository accountRepository, TransferRepository transferRepository){
         this.accountRepository = accountRepository;
@@ -78,7 +81,9 @@ public class TransferServiceImp implements TransferService{
                         transferOutput.setErrors(errors);
                         transferOutput.setTax_collected(0.0);
                     } else {
-                        if (transferInput.getCurrency().equals("USD")) {
+
+                        String[] currencies = currencySupported.split(";");
+                        if (ServiceUtils.validateCurrency(currencies, transferInput.getCurrency())) {
 
                             Date date = new Date();
                             SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
@@ -203,5 +208,6 @@ public class TransferServiceImp implements TransferService{
         return convertCad;
 
     }
+
 
 }

@@ -15,4 +15,16 @@ public class ServiceUtils {
         return tax;
     }
 
+    public static boolean validateCurrency(String[] currencies, String inputCurrency){
+
+        boolean isCurrencyOk = false;
+        for (int i = 0; i < currencies.length; i++) {
+            if (currencies[i].equals(inputCurrency)){
+                isCurrencyOk = true;
+                break;
+            }
+        }
+        return isCurrencyOk;
+    }
+
 }
