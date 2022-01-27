@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -29,6 +30,7 @@ import java.util.Optional;
 @Slf4j
 @RequiredArgsConstructor
 @Service
+@Component
 public class TransferServiceImp implements TransferService{
 
 
@@ -51,6 +53,13 @@ public class TransferServiceImp implements TransferService{
     public TransferServiceImp(AccountRepository accountRepository, TransferRepository transferRepository){
         this.accountRepository = accountRepository;
         this.transferRepository= transferRepository;
+        this.currencySupported= currencySupported;
+    }
+
+    public TransferServiceImp(AccountRepository accountRepository, TransferRepository transferRepository, String currencySupported){
+        this.accountRepository = accountRepository;
+        this.transferRepository= transferRepository;
+        this.currencySupported= currencySupported;
     }
 
     @Override
@@ -82,7 +91,7 @@ public class TransferServiceImp implements TransferService{
                         transferOutput.setTax_collected(0.0);
                     } else {
 
-                        String[] currencies = currencySupported.split(";");
+                        String[] currencies = getCurrencySupported().split(";");
                         if (ServiceUtils.validateCurrency(currencies, transferInput.getCurrency())) {
 
                             Date date = new Date();
@@ -209,5 +218,35 @@ public class TransferServiceImp implements TransferService{
 
     }
 
+    public String getHost() {
+        return host;
+    }
 
+    public void setHost(String host) {
+        this.host = host;
+    }
+
+    public String getAccessKey() {
+        return accessKey;
+    }
+
+    public void setAccessKey(String accessKey) {
+        this.accessKey = accessKey;
+    }
+
+    public String getSymbols() {
+        return symbols;
+    }
+
+    public void setSymbols(String symbols) {
+        this.symbols = symbols;
+    }
+
+    public String getCurrencySupported() {
+        return currencySupported;
+    }
+
+    public void setCurrencySupported(String currencySupported) {
+        this.currencySupported = currencySupported;
+    }
 }

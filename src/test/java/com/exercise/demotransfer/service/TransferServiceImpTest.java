@@ -12,6 +12,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Configuration;
@@ -33,10 +35,26 @@ import java.util.Optional;
 
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.when;
 
-@SpringBootTest (value = { "currency.supported=USD;" })
+//@ExtendWith(MockitoExtension.class)
+@SpringBootTest
+/*@SpringBootConfiguration
+@RunWith(SpringJUnit4ClassRunner.class)
+@PropertySource("classpath:application.properties")
+@TestPropertySource("/application.properties")
+@TestPropertySource(properties = {
+        "currency.supported=USD;",
+        "exchangeratesapi.host=http://api.exchangeratesapi.io/v1/latest?",
+        "exchangeratesapi.accesskey=access_key=56e98d40b6310d0010cca501a64d0426",
+        "exchangeratesapi.symbols=&symbols=USD,AUD,CAD,PLN,MXN"
+})*/
+
 class TransferServiceImpTest {
+
+   /* @Value("${currency.supported}")
+    private String currencySupported;*/
 
     @Mock
     private AccountRepository accountRepository;
@@ -47,12 +65,14 @@ class TransferServiceImpTest {
     @Autowired
     private TransferService transferService;
 
-    private String currencySupported;
+
+    private TransferServiceImp transferServiceImp;
 
     @BeforeEach
     public void setUp(){
 
-        //transferService = new TransferServiceImp(accountRepository, transferRepository);
+       // transferService = new TransferServiceImp(accountRepository, transferRepository, currencySupported);
+        //transferServiceImp = new TransferServiceImp(accountRepository,transferRepository, currencySupported);
         //currencySupported = env.getProperty("currency.supported");
         //when(System.getenv("currencySupported")).thenReturn("USD;");
 
@@ -81,7 +101,7 @@ class TransferServiceImpTest {
         String strDate = formatter.format(date);
         try {
             //TODO traer la variable currencySupported
-            //when (currencySupported).thenReturn("USD;");
+            //given(transferService.getCurrencySupported()).willReturn(currencySupported);
 
             when(transferRepository.lastTransfer(transferInput.getOrigin_account(),new SimpleDateFormat("yyyy-MM-dd").parse(strDate))).thenReturn(0L);
 

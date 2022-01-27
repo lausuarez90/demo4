@@ -18,11 +18,11 @@ import java.util.Properties;
 
 @Configuration
 @EnableJpaRepositories(basePackages = "com.exercise.demotransfer.data.repository")
-@PropertySource("application.properties")
+//@PropertySource("application.properties")
 @EnableTransactionManagement
 public class DemoJpaConfig {
 
-    @Autowired
+   /* @Autowired
     private Environment env;
 
     @Bean
@@ -62,10 +62,10 @@ public class DemoJpaConfig {
         hibernateProperties.setProperty("spring.jpa.database-platform", env.getProperty("spring.jpa.database-platform"));
         hibernateProperties.setProperty("spring.jpa.defer-datasource-initialization", env.getProperty("spring.jpa.defer-datasource-initialization"));
         hibernateProperties.setProperty("spring.jpa.show-sql", env.getProperty("spring.jpa.show-sql"));
-        /*hibernateProperties.setProperty("hibernate.cache.use_second_level_cache", env.getProperty("hibernate.cache.use_second_level_cache"));
-        hibernateProperties.setProperty("hibernate.cache.use_query_cache", env.getProperty("hibernate.cache.use_query_cache"));*/
+        *//*hibernateProperties.setProperty("hibernate.cache.use_second_level_cache", env.getProperty("hibernate.cache.use_second_level_cache"));
+        hibernateProperties.setProperty("hibernate.cache.use_query_cache", env.getProperty("hibernate.cache.use_query_cache"));*//*
 
         return hibernateProperties;
-    }
+    }*/
 
 }
