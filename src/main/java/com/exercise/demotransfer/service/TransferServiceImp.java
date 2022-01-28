@@ -91,7 +91,7 @@ public class TransferServiceImp implements TransferService{
                         transferOutput.setTax_collected(0.0);
                     } else {
 
-                        String[] currencies = getCurrencySupported().split(";");
+                        String[] currencies = currencySupported.split(";");
                         if (ServiceUtils.validateCurrency(currencies, transferInput.getCurrency())) {
 
                             Date date = new Date();
@@ -216,37 +216,5 @@ public class TransferServiceImp implements TransferService{
 
         return convertCad;
 
-    }
-
-    public String getHost() {
-        return host;
-    }
-
-    public void setHost(String host) {
-        this.host = host;
-    }
-
-    public String getAccessKey() {
-        return accessKey;
-    }
-
-    public void setAccessKey(String accessKey) {
-        this.accessKey = accessKey;
-    }
-
-    public String getSymbols() {
-        return symbols;
-    }
-
-    public void setSymbols(String symbols) {
-        this.symbols = symbols;
-    }
-
-    public String getCurrencySupported() {
-        return currencySupported;
-    }
-
-    public void setCurrencySupported(String currencySupported) {
-        this.currencySupported = currencySupported;
     }
 }

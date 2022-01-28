@@ -35,6 +35,7 @@ import java.util.Optional;
 
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.when;
 
@@ -79,7 +80,7 @@ class TransferServiceImpTest {
     }
 
     @Test
-    void setTransfer() {
+    void sureSetTransfer() {
 
         TransferInput transferInput = new TransferInput();
         transferInput.setAmount(new BigDecimal("500"));
@@ -88,8 +89,11 @@ class TransferServiceImpTest {
         transferInput.setDestination_account("852369741");
         transferInput.setDescription("Hey! I am sending your money, this is a test");
 
+        TransferOutput output = transferService.setTransfer(transferInput);
+        assertEquals("OK", output.getStatus());
 
-        AccountEntity account = new AccountEntity();
+
+        /*AccountEntity account = new AccountEntity();
         account.setId(4L);
         account.setAccountId("789456123");
         account.setAccountBalance("25800");
@@ -100,8 +104,6 @@ class TransferServiceImpTest {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
         String strDate = formatter.format(date);
         try {
-            //TODO traer la variable currencySupported
-            //given(transferService.getCurrencySupported()).willReturn(currencySupported);
 
             when(transferRepository.lastTransfer(transferInput.getOrigin_account(),new SimpleDateFormat("yyyy-MM-dd").parse(strDate))).thenReturn(0L);
 
@@ -112,10 +114,108 @@ class TransferServiceImpTest {
 
         } catch (ParseException e) {
             e.printStackTrace();
-        }
+        }*/
     }
 
     @Test
-    void testCallApiExchangeRate() {
+    void testOriginAccountDifferentDestinationAccount() {
+
+        TransferInput transferInput = new TransferInput();
+        transferInput.setAmount(new BigDecimal("500"));
+        transferInput.setCurrency("USD");
+        transferInput.setOrigin_account("789456123");
+        transferInput.setDestination_account("789456123");
+        transferInput.setDescription("Hey! I am sending your money, this is a test");
+
+        TransferOutput output = transferService.setTransfer(transferInput);
+        assertNotEquals("OK", output.getStatus(), "The origin account is equal to destination account");
     }
+
+    @Test
+    void testInsufficientFunds() {
+
+        TransferInput transferInput = new TransferInput();
+        transferInput.setAmount(new BigDecimal("10000"));
+        transferInput.setCurrency("USD");
+        transferInput.setOrigin_account("741258963");
+        transferInput.setDestination_account("789456123");
+        transferInput.setDescription("Hey! I am sending your money, this is a test");
+
+        TransferOutput output = transferService.setTransfer(transferInput);
+        assertNotEquals("OK", output.getStatus(), "insufficient-funds");
+
+    }
+
+    @Test
+    void testLimitExceeded() {
+
+        TransferInput transferInput = new TransferInput();
+        transferInput.setAmount(new BigDecimal("500"));
+        transferInput.setCurrency("USD");
+        transferInput.setOrigin_account("789456123");
+        transferInput.setDestination_account("852369741");
+        transferInput.setDescription("Hey! I am sending your money, this is a test");
+
+        TransferOutput output = transferService.setTransfer(transferInput);
+
+        TransferInput transferInput2 = new TransferInput();
+        transferInput.setAmount(new BigDecimal("50"));
+        transferInput.setCurrency("USD");
+        transferInput.setOrigin_account("789456123");
+        transferInput.setDestination_account("852369741");
+        transferInput.setDescription("Hey! I am sending your money, this is a test");
+
+        TransferOutput output2 = transferService.setTransfer(transferInput);
+
+        TransferInput transferInput3 = new TransferInput();
+        transferInput.setAmount(new BigDecimal("1000"));
+        transferInput.setCurrency("USD");
+        transferInput.setOrigin_account("789456123");
+        transferInput.setDestination_account("852369741");
+        transferInput.setDescription("Hey! I am sending your money, this is a test");
+
+        TransferOutput output3 = transferService.setTransfer(transferInput);
+
+        TransferInput transferInput4 = new TransferInput();
+        transferInput.setAmount(new BigDecimal("500"));
+        transferInput.setCurrency("USD");
+        transferInput.setOrigin_account("789456123");
+        transferInput.setDestination_account("852369741");
+        transferInput.setDescription("Hey! I am sending your money, this is a test");
+
+        TransferOutput output4 = transferService.setTransfer(transferInput);
+        assertEquals("limit_exceeded", output4.getErrors().get(0));
+
+    }
+
+    @Test
+    void testCurrencyUnsupported() {
+
+        TransferInput transferInput = new TransferInput();
+        transferInput.setAmount(new BigDecimal("10000"));
+        transferInput.setCurrency("CAD");
+        transferInput.setOrigin_account("123456789");
+        transferInput.setDestination_account("789456123");
+        transferInput.setDescription("Hey! I am sending your money, this is a test");
+
+        TransferOutput output = transferService.setTransfer(transferInput);
+        assertEquals("currency unsupported", output.getErrors().get(0));
+
+    }
+
+    @Test
+    void testOriginAccountNotExist() {
+
+        TransferInput transferInput = new TransferInput();
+        transferInput.setAmount(new BigDecimal("10000"));
+        transferInput.setCurrency("USD");
+        transferInput.setOrigin_account("1");
+        transferInput.setDestination_account("789456123");
+        transferInput.setDescription("Hey! I am sending your money, this is a test");
+
+        TransferOutput output = transferService.setTransfer(transferInput);
+        assertEquals("The origin account does not exist", output.getErrors().get(0));
+
+    }
+
 }
